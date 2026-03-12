@@ -9,7 +9,7 @@ const pathToFrontend = path.join(__dirname, '../frontend');
 ////////////////////////
 
 const logRoutes = (req, res, next) => {
-  const time = (new Date()).toLocaleString();
+  const time = new Date().toLocaleString();
   console.log(`${req.method}: ${req.originalUrl} - ${time}`);
   next();
 };
@@ -21,7 +21,6 @@ app.use(express.json());
 ////////////////////////
 // In-Memory Database
 ////////////////////////
-
 
 // Increments and returns a unique id each time it is called.
 let id = 1;
@@ -40,33 +39,82 @@ const todos = [
 
 // TODO: GET /api/todos
 // Response: 200, array of all todos
-
+const serveTodos = async (req, res, next) => {
+  res.send(todos);
+};
 
 // TODO: GET /api/todos/:id
 // Response: 200, single todo object
 // Error: 404 if no todo with that id
-
+const serveTodo = (req, res, next) => {
+  const id = req.params.id;
+  const exist = todos.some((todo) => todo.id === Number(id));
+  if (!exist) {
+    res.status(404).send(`ID not found`);
+    return;
+  }
+  res.send(todos.find((todo) => todo.id === Number(id)));
+};
 
 // TODO: POST /api/todos
 // Request body: { task }
 // Response: 201, the newly created todo object
 // Error: 400 if task is missing from the request body
-
+const createTask = (req, res, next) => {
+  const task = req.body.task;
+  if (!task) {
+    res.status(400).send(`Invalid Input`);
+    return;
+  }
+  const newTask = { id: getId(), task: task, isDone: false };
+  todos.push(newTask);
+  res.status(201).send(newTask);
+};
 
 // TODO: PATCH /api/todos/:id
 // Request body: { isDone }
 // Response: 200, the updated todo object
 // Error: 404 if no todo with that id
-
+const updateTask = (req, res, next) => {
+  const isDone = req.body.isDone;
+  const id = req.params.id;
+  const exist = todos.some((todo) => todo.id === Number(id));
+  if (!exist) {
+    res.status(404).send(`ID not found`);
+    return;
+  }
+  const todo = todos.find((todo) => todo.id === Number(id));
+  todo.isDone = isDone;
+  res.send(todo);
+};
 
 // TODO: DELETE /api/todos/:id
 // Response: 204, no content
 // Error: 404 if no todo with that id
-
+const removeTask = (req, res, next) => {
+  const id = req.params.id;
+  const exist = todos.some((todo) => todo.id === Number(id));
+  if (!exist) {
+    res.status(404).send(`ID not found`);
+    return;
+  }
+  const theTask = todos.findIndex((task) => task.id === Number(id));
+  todos.splice(theTask, 1);
+  res.sendStatus(204);
+};
 
 // TODO: Catch-all handler — send a 404 JSON error for unmatched /api routes,
 // or serve index.html for all other routes (SPA fallback)
+const serve404 = (req, res, next) => {
+  res.status(404).send({ error: `Not found: ${req.originalUrl}` });
+};
 
+app.get(`/api/todos`, serveTodos);
+app.get(`/api/todos/:id`, serveTodo);
+app.post(`/api/todos`, createTask);
+app.patch(`/api/todos/:id`, updateTask);
+app.delete(`/api/todos/:id`, removeTask);
+app.use(serve404);
 
 const port = 8080;
 app.listen(port, () => console.log(`Listening at http://localhost:${port}`));
