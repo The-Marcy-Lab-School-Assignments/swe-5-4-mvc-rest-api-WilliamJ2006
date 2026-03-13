@@ -1,4 +1,9 @@
-import { getTodos, createTodo, updateTodo, deleteTodo } from './fetch-helpers.js';
+import {
+  getTodos,
+  createTodo,
+  updateTodo,
+  deleteTodo,
+} from './fetch-helpers.js';
 import { renderTodos, renderError } from './dom-helpers.js';
 
 const loadTodos = async () => {
@@ -46,8 +51,12 @@ const handleTodosListClick = async (e) => {
 };
 
 // Add Event Listeners
-document.querySelector('#add-todo-form').addEventListener('submit', handleAddTodo);
-document.querySelector('#todos-list').addEventListener('click', handleTodosListClick);
+document
+  .querySelector('#add-todo-form')
+  .addEventListener('submit', handleAddTodo);
+document
+  .querySelector('#todos-list')
+  .addEventListener('click', handleTodosListClick);
 
 // Load Todos on Page Load
 loadTodos();
